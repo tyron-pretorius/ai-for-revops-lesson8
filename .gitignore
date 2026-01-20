@@ -1,0 +1,60 @@
+# Virtual environment
+venv/
+env/
+.venv/
+.env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE files
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Attached assets
+attached_assets/
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.pending_workflows.json
+.workflow_checkpoints.db
+
+# Sensitive files with credentials
+google_api_auth.json
+*.json
+!package.json
+!package-lock.json
+
+# Test files
+test_*.py
+add_missed_smartlead.py
+find_sfdc_field_names.py
+
+# Data files
+leandata_region_mapping.csv
+Inbound Automation Logging Contact Sales - Missed Smartlead.csv
+SFDC Region - Country Region Mapping Clean.csv
+
+# Backdating CSV files
+backdating/*.csv
