@@ -6,9 +6,10 @@ gunicorn>=23.0.0
 openai>=1.0.0
 
 # LangGraph / LangChain (Module 3)
-langgraph>=0.2.0
-langchain>=0.3.0
-langchain-openai>=0.2.0
+langgraph>=1.0.0
+langchain-core>=1.0.0
+langgraph-checkpoint>=4.0.0
+langgraph-checkpoint-sqlite>=3.0.0
 
 # Slack (for human-in-the-loop)
 slack-bolt>=1.18.0
