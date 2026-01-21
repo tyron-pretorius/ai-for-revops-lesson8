@@ -12,7 +12,7 @@ We use the Responses API exclusively (not Chat Completions) because:
 
 import os
 import json
-from typing import Dict, Any, List, Optional
+from typing import Dict, List, Optional
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -26,7 +26,6 @@ def create_response(
     prompt: str,
     input_text: str = "",
     model: str = MODEL,
-    temperature: float = 0.3,
     tools: Optional[List[Dict]] = None
 ):
     """
