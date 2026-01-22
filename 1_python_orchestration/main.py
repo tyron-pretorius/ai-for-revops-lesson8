@@ -3,7 +3,11 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 import json
 import os
+import sys
 import traceback
+
+# Add parent directory to Python path to allow imports from functions module
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import qualification_functions
 from functions import salesforce_functions, gpt_functions, googlesheets_functions, slack_functions, gmail_functions
@@ -83,21 +87,25 @@ def contact_sales():
         email_response = gpt_functions.create_response(EMAIL_PROMPT, input)
         email_body = email_response.get("email_body")
         # Replace newlines with <br> tags for HTML email
-        email_body_html = email_body.replace('\n', '<br><br>')
+        email_body_html = email_body.replace('\n', '<br>')
         email_full = f"Hi {first_name},<br><br>{email_body_html}<br><br>Best,<br>Quinn"
         info["email_body"] = email_body_html
 
-        gmail_response = gmail_functions.send_email("tyron@theworkflowpro.com", email, '', "Telnyx Contact Sales Response", email_full, is_html=True)
+        gmail_response = gmail_functions.send_email(email, '', "Telnyx Contact Sales Response", email_full, is_html=True)
         
         # Check if email was sent successfully
-        if 'SENT' not in gmail_response.get('labelIds', []):
+        # Success: labelIds has a single value "SENT"
+        label_ids = gmail_response.get('labelIds', [])
+        email_sent_successfully = label_ids == ['SENT']
+        
+        if not email_sent_successfully:
             slack_functions.send_slack_message_channel("wins", f"Contact Sales Flow Error\n\nGmail response = '{gmail_response}' for {email}")
         
         # Convert dict to string for Google Sheets (can't store dicts directly)
         info["gmail_response"] = json.dumps(gmail_response)
 
         # Log email as Salesforce task (only if email was sent and not support inquiry)
-        if 'SENT' in gmail_response.get('labelIds', []):
+        if email_sent_successfully:
             sfdc_task_response = salesforce_functions.log_sfdc_task(
                 person_id=id,
                 subject="Telnyx Contact Sales Response",

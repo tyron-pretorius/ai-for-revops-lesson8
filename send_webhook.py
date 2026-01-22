@@ -20,10 +20,10 @@ def send_webhook():
         "last_name": "Pretorius",
         "company_name": "Trinity College Dublin",
         "phone": "+1234567890",
-        "sales_inquiry": "We need SMS and Voice APIs for our customer notification system. We expect to send around 50,000 SMS per month and make about 50,000 outbound minutes.",
-        "revenue": "",
-        "industry": "",
-        "employees": "",
+        "sales_inquiry": "I want to use send SMS via API",
+        "revenue": "$0-$1M",
+        "industry": "Internet Software & Services",
+        "employees": "150",
         "website": "tcd.ie"
     }
     

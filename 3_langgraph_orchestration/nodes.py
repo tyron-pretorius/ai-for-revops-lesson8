@@ -415,7 +415,7 @@ def request_human_approval_node(state: WorkflowState) -> Dict[str, Any]:
     👤 HUMAN-IN-THE-LOOP: Request approval via Slack
     
     This node:
-    1. Sends the email draft to Slack for human review
+    1. Sends the email draft to Slack for human review (first time only)
     2. PAUSES the workflow (sets status to "waiting_for_human")
     3. Returns - the workflow will resume when human responds
     
@@ -423,13 +423,37 @@ def request_human_approval_node(state: WorkflowState) -> Dict[str, Any]:
     - @bot approve → Send the email
     - @bot reject [reason] → Discard
     - @bot changes [feedback] → Loop back to regenerate email
+    
+    Note: If this is a follow-up (existing thread), we skip sending the approval request
+    to avoid duplicate messages. slack_listener.py will send the updated draft in the thread.
     """
     print("\n  👤 Requesting human approval via Slack...")
     
     lead = state.get("lead", {})
     qualification = state.get("qualification", {})
     email_draft = state.get("email_draft", {})
+    human_approval = state.get("human_approval", {})
     
+    # Check if we already have a thread (follow-up after changes requested)
+    existing_thread_ts = human_approval.get("slack_thread_ts")
+    existing_channel = human_approval.get("slack_channel")
+    
+    if existing_thread_ts:
+        # This is a follow-up - skip sending approval request to channel
+        # slack_listener.py will send the updated draft in the thread
+        print(f"       ↻ Follow-up detected - skipping channel message (slack_listener will handle thread)")
+        print(f"       ⏸️  Workflow PAUSED - waiting for human response")
+        return {
+            "human_approval": {
+                "requested": True,
+                "slack_channel": existing_channel,
+                "slack_thread_ts": existing_thread_ts,
+                "status": "pending"
+            },
+            "workflow_status": "waiting_for_human"
+        }
+    
+    # First time - send the full approval request to channel
     result = send_slack_approval_request(
         lead_email=lead.get("email", ""),
         qualification=qualification.get("status", "Unknown"),

@@ -30,8 +30,8 @@ SHEET_ID = '1Yay6Bf7KEjOxWmKp_aMa_Cmn-R42hYq2ykoLd1O5_Io'
 SHEET_NAME = 'Agentic'
 SHEET_HEADERS = [
     "timestamp", "id", "email", "sfdc_type", "first_name", "last_name",
-    "company_name", "website", "phone", "sales_inquiry", "revenue", "industry",
-    "employees", "inquiry_type", "status", "status_detail",
+    "company_name", "website", "phone", "revenue", "industry",
+    "employees","sales_inquiry", "inquiry_type", "status", "status_detail",
     "email_body", "sfdc_update_response","sfdc_task_response", "gmail_response", "error"
 ]
 
@@ -41,35 +41,7 @@ SHEET_HEADERS = [
 # =============================================================================
 
 TOOLS = [
-    {
-        "type": "function",
-        "name": "lookup_person_in_salesforce",
-        "description": (
-            "Look up a Lead or Contact by ID and return specific fields. "
-            "Use Salesforce API field names. Non-standard fields: "
-            "Employees_Cb__c (employees) and Industry_Cb__c (industry)."
-        ),
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "record_id": {
-                    "type": "string",
-                    "description": "The Salesforce Lead or Contact ID"
-                },
-                "record_type": {
-                    "type": "string",
-                    "enum": ["Lead", "Contact"],
-                    "description": "Whether this is a Lead or Contact record"
-                },
-                "fields": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "List of Salesforce API field names to return"
-                }
-            },
-            "required": ["record_id", "record_type", "fields"]
-        }
-    },
+    
     {
         "type": "function",
         "name": "analyze_inquiry",
@@ -174,8 +146,37 @@ TOOLS = [
     },
     {
         "type": "function",
+        "name": "lookup_person_in_salesforce",
+        "description": (
+            "Look up a Lead or Contact by ID and return specific fields. "
+            "Use Salesforce API field names. Non-standard fields: "
+            "Employees_Cb__c (employees) and Industry_Cb__c (industry)."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "record_id": {
+                    "type": "string",
+                    "description": "The Salesforce Lead or Contact ID"
+                },
+                "record_type": {
+                    "type": "string",
+                    "enum": ["Lead", "Contact"],
+                    "description": "Whether this is a Lead or Contact record"
+                },
+                "fields": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "List of Salesforce API field names to return"
+                }
+            },
+            "required": ["record_id", "record_type", "fields"]
+        }
+    },
+    {
+        "type": "function",
         "name": "update_salesforce_status",
-        "description": "Update the lead's status in Salesforce after qualification",
+        "description": "Update the lead's status in Salesforce after qualification. Valid status values are: SSL, SQL, Unknown, or Disqualified.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -190,7 +191,8 @@ TOOLS = [
                 },
                 "status": {
                     "type": "string",
-                    "description": "New status value"
+                    "enum": ["SSL", "SQL", "Unknown", "Disqualified"],
+                    "description": "Qualification status. Must be one of: SSL, SQL, Unknown, or Disqualified"
                 }
             },
             "required": ["record_id", "record_type", "status"]

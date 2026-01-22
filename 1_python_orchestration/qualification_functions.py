@@ -1,11 +1,16 @@
 import csv
 import os
+import sys
+
+# Add parent directory to Python path to allow imports from functions module
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from functions import gpt_functions
 from prompts import QUALIFICATION_PROMPT
 
-# Get absolute path to CSV file (in parent directory)
+# Get absolute path to CSV file (in same directory)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-FREEMAIL_CSV = os.path.join(SCRIPT_DIR, '..', 'Freemail Domains.csv')
+FREEMAIL_CSV = os.path.join(SCRIPT_DIR, 'Freemail Domains.csv')
 
 def is_freemail(email):
     # Read freemail domains from CSV file
@@ -27,7 +32,7 @@ def qualify(revenue, industry, employees,email, sales_inquiry):
     if is_freemail(email):
       status = "SSL"
       status_detail = "freemail"
-    elif revenue not in revenue_values[:3]:
+    elif revenue and revenue not in revenue_values[:3]:
       status = "SQL"
       status_detail = "revenue >= $50m"
     elif industry == "Internet Software & Services" and int(employees) >= 100:
