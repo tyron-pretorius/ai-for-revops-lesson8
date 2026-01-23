@@ -34,6 +34,7 @@ from tools import (
     lookup_crm_data,
     lookup_marketo_lead,
     get_marketo_activity,
+    format_marketo_activity_type,
     research_company_web,
     analyze_inquiry,
     qualify_lead_ai,
@@ -147,10 +148,11 @@ def research_marketo_node(state: WorkflowState) -> Dict[str, Any]:
                 # Show the activities found
                 activities = activity_result.get('activities', [])
                 for activity in activities[:5]:  # Show up to 5 activities
-                    activity_type = activity.get('activityTypeId', 'Unknown')
+                    activity_type_id = activity.get('activityTypeId', 0)
+                    activity_type_name = format_marketo_activity_type(activity_type_id)
                     activity_date = activity.get('activityDate', '')[:10] if activity.get('activityDate') else ''
                     primary_attr = activity.get('primaryAttributeValue', '')
-                    print(f"         - Type {activity_type}: {primary_attr} ({activity_date})")
+                    print(f"         - {activity_type_name}: {primary_attr} ({activity_date})")
                 if activity_count > 5:
                     print(f"         ... and {activity_count - 5} more")
         else:

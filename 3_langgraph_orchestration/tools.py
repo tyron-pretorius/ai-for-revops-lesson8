@@ -14,9 +14,7 @@ Tools are organized by category:
 - Google Sheets (Logging)
 """
 
-import os
-import sys
-import json
+import os, sys, requests, json, traceback
 from typing import Dict, Any, Optional
 from datetime import datetime
 
@@ -157,6 +155,41 @@ def lookup_marketo_lead(email: str) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
+# Marketo activity type mapping
+MARKETO_ACTIVITY_TYPES = {
+    1: "Visited Webpage",
+    2: "Filled out Form",
+    10: "Opened Email"
+}
+
+def format_marketo_activity_type(activity_type_id: int) -> str:
+    """Convert Marketo activity type ID to human-readable name."""
+    return MARKETO_ACTIVITY_TYPES.get(activity_type_id, f"Type {activity_type_id}")
+
+def format_marketo_activities_summary(activities: list) -> str:
+    """
+    Format Marketo activities as a nice summary string.
+    
+    Example output:
+    "Visited Webpage: telnyx.com/customer-stories (2026-01-18)
+    Filled out Form: FO - Subscribe (2026-01-18)
+    Visited Webpage: telnyx.com/contact-us (2026-01-18)
+    Opened Email: Webinar_2026_01_5_Predictions_for_Voice_AI."
+    """
+    if not activities:
+        return ""
+    
+    formatted = []
+    for activity in activities:
+        activity_type_id = activity.get('activityTypeId', 0)
+        activity_type_name = format_marketo_activity_type(activity_type_id)
+        primary_attr = activity.get('primaryAttributeValue', '')
+        activity_date = activity.get('activityDate', '')[:10] if activity.get('activityDate') else ''
+        
+        formatted.append(f"{activity_type_name}: {primary_attr} ({activity_date})")
+    
+    return "\n".join(formatted)
+
 def get_marketo_activity(marketo_lead_id: str, days_back: int = 7) -> Dict[str, Any]:
     """
     Get recent activities for a Marketo lead.
@@ -232,7 +265,6 @@ def research_company_web(company_name: str, website: str = "") -> Dict[str, Any]
             "source": "web_search"
         }
     except Exception as e:
-        import traceback
         print(f"       ⚠️ Web search error: {traceback.format_exc()}")
         return {"success": False, "error": str(e)}
 
@@ -422,7 +454,6 @@ def send_slack_approval_request(
     - @bot reject [reason] - Discard the email
     - @bot changes [feedback] - Request changes (loops back to email generation!)
     """
-    import requests
     
     if not SLACK_BOT_TOKEN:
         return {"success": False, "error": "SLACK_BOT_TOKEN not configured"}
@@ -536,7 +567,6 @@ def extract_business_summary(state: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         A flat dictionary matching SHEET_HEADERS
     """
-    import json
     
     # The lead has already been ENRICHED by research_salesforce_node,
     # so we just read directly from state.lead - no fallbacks needed!
@@ -546,12 +576,12 @@ def extract_business_summary(state: Dict[str, Any]) -> Dict[str, Any]:
     human_approval = state.get("human_approval", {})
     research = state.get("research", {})
     
-    # Get Marketo activity - convert to string for sheets
+    # Get Marketo activity - format as nice summary for sheets
     marketo_data = research.get("marketo", {})
     marketo_activity = ""
     if marketo_data.get("success") and marketo_data.get("activities"):
         activities = marketo_data.get("activities", [])
-        marketo_activity = json.dumps(activities) if activities else ""
+        marketo_activity = format_marketo_activities_summary(activities) if activities else ""
     
     # Get web search results - convert to string for sheets
     web_data = research.get("web", {})

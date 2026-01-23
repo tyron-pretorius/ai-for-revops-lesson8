@@ -92,7 +92,7 @@ def get_pending_workflow(channel: str, thread_ts: str) -> Optional[Dict[str, Any
 
 
 def remove_pending_workflow(channel: str, thread_ts: str) -> None:
-    """Remove a workflow from pending (after it completes)."""
+    """Remove a workflow from pending_workflows file (after it completes)."""
     workflow_key = f"{channel}:{thread_ts}"
     workflows = _load_pending_workflows()
     workflows.pop(workflow_key, None)
